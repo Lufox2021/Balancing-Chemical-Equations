@@ -8,7 +8,8 @@
  *   4  Combustion of O-containing organics, multi-element and harder redox-free balances
  *   5  Molecular redox and many-species "monsters"
  * Sources: "WS 1.7" = Harder Balancing Problems worksheet; "ASU" = Arkansas State answers sheet;
- *          "Bank" = additional standard problems added for this tool.
+ *          "Bank" = additional standard problems added for this tool;
+ *          "ChemTeam" = challenge problems from chemteam.info (answers recomputed and verified by the tool).
  */
 (function (root) {
   const PROBLEM_BANK = [
@@ -147,6 +148,56 @@
     { eq: 'C3H5(NO3)3 -> CO2 + N2 + H2O + O2', level: 5, src: 'Bank' },
     { eq: 'Ca3(PO4)2 + SiO2 + C -> CaSiO3 + P4 + CO', level: 5, src: 'Bank' },
     { eq: 'K4Fe(CN)6 + KMnO4 + H2SO4 -> KHSO4 + Fe2(SO4)3 + MnSO4 + HNO3 + CO2 + H2O', level: 5, src: 'Bank' },
+
+    // ---------------- Added from ChemTeam (chemteam.info) redox problem sets ----------------
+    { eq: "K4Fe(CN)6 + Ce(NO3)4 + KOH -> Fe(OH)3 + Ce(OH)3 + KNO3 + K2CO3 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "K4Fe(CN)6 + H2SO4 + KMnO4 -> Fe2(SO4)3 + MnSO4 + H2O + K2SO4 + HNO3 + CO2", level: 5, src: "ChemTeam" },
+    { eq: "CuSCN + KIO3 + HCl -> CuSO4 + HCN + ICl + KCl + H2O", level: 5, src: "ChemTeam" },
+    { eq: "CuSCN + H3PO4 + KIO3 -> Cu3(PO4)2 + I2 + H2O + HCN + KHSO4 + KH2PO4", level: 5, src: "ChemTeam" },
+    { eq: "Ce2(SO4)3 + HgSO4 + HNO3 + CO2 + H2SO4 -> Ce(SO4)2 + Hg2(CN)2 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "As2S3 + Mn(NO3)2 + K2CO3 -> K3AsO4 + K2SO4 + K2MnO4 + NO + CO2", level: 5, src: "ChemTeam" },
+    { eq: "Pb(N3)2 + Cr(MnO4)2 -> Cr2O3 + MnO2 + Pb3O4 + NO", level: 5, src: "ChemTeam" },
+    { eq: "Pb(N3)2 + Cr(MnO4)2 -> Cr2O3 + MnO2 + PbO2 + NO", level: 5, src: "ChemTeam" },
+    { eq: "K4Fe(SCN)6 + K2Cr2O7 + H2SO4 -> Fe2(SO4)3 + Cr2(SO4)3 + CO2 + H2O + K2SO4 + KNO3", level: 5, src: "ChemTeam" },
+    { eq: "[Cr(N2H4CO)3]4[Cr(CN)6]3 + KMnO4 + H2SO4 -> K2Cr2O7 + MnSO4 + CO2 + KNO3 + K2SO4 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "H2C2O4 + K2CrO4 + HCl -> CrCl3 + KCl + H2O + CO2", level: 5, src: "ChemTeam" },
+    { eq: "Mn(NO3)2 + PbO2 + HNO3 -> HMnO4 + Pb(NO3)2 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "Sb2O5 + KI + HCl -> SbCl3 + KCl + I2 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "Bi(OH)3 + K2SnO2 -> Bi + K2SnO3 + H2O", level: 4, src: "ChemTeam" },
+    { eq: "C14H12 + Na2Cr2O7 + H2SO4 -> C14H8O2 + Cr2(SO4)3 + Na2SO4 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "C6H6O2 + Na2Cr2O7 + H2SO4 -> C6H4O2 + Cr2(SO4)3 + Na2SO4 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "C6H10O + HNO3 -> C6H10O4 + NO2 + H2O", level: 4, src: "ChemTeam" },
+    { eq: "Na2C2O4 + KMnO4 + H2SO4 -> CO2 + MnSO4 + K2SO4 + Na2SO4 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "KMnO4 + H2SO3 -> K2SO4 + MnSO4 + H2SO4 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "KMnO4 + NaHSO3 + H2SO4 -> MnSO4 + K2SO4 + Na2SO4 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "KMnO4 + Na2SO3 + H2SO4 -> K2SO4 + MnSO4 + Na2SO4 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "As2O3 + Cl2 + H2O -> H3AsO4 + HCl", level: 4, src: "ChemTeam" },
+    { eq: "P4 + KOH + H2O -> KH2PO2 + PH3", level: 4, src: "ChemTeam" },
+    { eq: "K2CrO4 + Na2SO3 + HCl -> KCl + Na2SO4 + CrCl3 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "Na2S2O3 + KMnO4 + H2O -> Na2SO4 + K2SO4 + MnO2 + KOH", level: 5, src: "ChemTeam" },
+    { eq: "K2S + KMnO4 + H2O -> S8 + MnO2 + KOH", level: 5, src: "ChemTeam" },
+    { eq: "HNO3 + H2S -> NO + S8 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "Na2S2O3 + KMnO4 + HNO3 -> MnSO4 + Na2SO4 + NaNO3 + KNO3 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "FeC2O4 + H2O2 + K2C2O4 -> K3[Fe(C2O4)3] + KOH", level: 5, src: "ChemTeam" },
+    { eq: "KIO3 + KI + H2SO4 -> KI3 + K2SO4 + H2O", level: 4, src: "ChemTeam" },
+    { eq: "C2H5OH + H2CrO4 + H2SO4 -> CH3CHO + Cr2(SO4)3 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "As2O3 + HNO3 + H2O -> H3AsO4 + NO2", level: 4, src: "ChemTeam" },
+    { eq: "Cl2 + AgNO3 + H2O -> AgCl + HClO3 + HNO3", level: 5, src: "ChemTeam" },
+    { eq: "MnO2 + Na2SnO3 + KOH -> KMnO4 + Na2SnO2 + H2O", level: 4, src: "ChemTeam" },
+    { eq: "K2Cr2O7 + Na2SO3 + H2SO4 -> Cr2(SO4)3 + K2SO4 + Na2SO4 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "K2Cr2O7 + C2H5OH + H2SO4 -> Cr2(SO4)3 + K2SO4 + CH3COOH + H2O", level: 5, src: "ChemTeam" },
+    { eq: "H3AsO4 + Zn + KNO3 + H2O -> AsH3 + KOH + Zn(NO3)2", level: 5, src: "ChemTeam" },
+    { eq: "Zn + NaNO3 + NaOH -> Na2ZnO2 + NH3 + H2O", level: 4, src: "ChemTeam" },
+    { eq: "C2H5OH + K2Cr2O7 + HCl -> C2H4O2 + CrCl3 + KCl + H2O", level: 5, src: "ChemTeam" },
+    { eq: "FeCl2 + K2CrO4 + HCl -> FeCl3 + CrCl3 + KCl + H2O", level: 5, src: "ChemTeam" },
+    { eq: "Bi(NO3)3·5H2O + H2O2 + RuCl3 + NaOH -> Bi2Ru2O7 + NaNO3 + NaCl + H2O", level: 5, src: "ChemTeam" },
+    { eq: "MnSO4 + NaBiO3 + H2SO4 -> NaMnO4 + Bi2(SO4)3 + H2O + Na2SO4", level: 5, src: "ChemTeam" },
+    { eq: "HBr + NaMnO4 -> NaBr + Br2 + MnBr2 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "HNO3 + KI -> KNO3 + I2 + NO + H2O", level: 4, src: "ChemTeam" },
+    { eq: "KOH + Zn + H2O + KNO3 -> K2Zn(OH)4 + NH3", level: 5, src: "ChemTeam" },
+    { eq: "KNO2 + KMnO4 + H2SO4 -> KNO3 + MnSO4 + K2SO4 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "K2Cr2O7 + K2C2O4 + H2C2O4 -> K3Cr(C2O4)3 + CO2 + H2O", level: 5, src: "ChemTeam" },
+    { eq: "Ca(OH)2 + NaOH + ClO2 + C -> NaClO2 + CaCO3 + H2O", level: 5, src: "ChemTeam" },
   ];
   if (typeof module !== 'undefined' && module.exports) module.exports = PROBLEM_BANK;
   else root.PROBLEM_BANK = PROBLEM_BANK;

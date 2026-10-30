@@ -24,7 +24,7 @@ An interactive learning tool for general chemistry students. It runs entirely in
 
 ## Problem bank
 
-`js/problems.js` holds 126 problems: the instructor's worksheet and answer-sheet problems plus standard additions, distributed across levels 1–5. Only the unbalanced equations are stored, so a wrong answer key can't creep in. To check the bank:
+`js/problems.js` holds 174 problems: the instructor's worksheet and answer-sheet problems, standard additions, and 48 challenge problems from chemteam.info, distributed across levels 1–5. Only the unbalanced equations are stored, so a wrong answer key can't creep in. To check the bank:
 
 ```
 node tests/verify-bank.js -v

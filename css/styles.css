@@ -96,7 +96,7 @@ input.err { border-color: var(--bad); background: var(--bad-soft); }
 .arrowc { font-family: var(--sans); }
 .equation sub { font-size: 0.62em; vertical-align: -0.28em; line-height: 0; }
 .equation .state { font-size: 0.6em; color: var(--muted); margin-left: 2px; }
-.equation .dot { padding: 0 1px; }
+.dot { padding: 0 2px; font-weight: 700; }
 .coef-text { color: var(--accent); font-weight: 600; }
 .coef-in { width: 3.4em; text-align: center; font-family: var(--serif); font-size: 0.85em; padding: 2px 4px !important; color: var(--accent); font-weight: 600; }
 .var-in { width: 1.9em; text-align: center; font-family: var(--serif); font-size: 0.85em; padding: 2px 2px !important; color: var(--accent); font-style: italic; font-weight: 600; }
