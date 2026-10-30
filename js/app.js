@@ -609,87 +609,181 @@
   function runSI(work, eq) {
     work.innerHTML = '';
     let mode = 'atoms';
+    let phase = 'inventory';          // 'inventory' (student counts) | 'adjust' (student changes coefficients) | 'done'
+    let histCount = 0;
+    let lastCoefs = null;             // coefficients of the last accepted inventory (Rat|null)[]
+    let lastCounts = null;            // {key: {left, right}} from the last accepted inventory
+    const misses = {};
     const ins = [];
     const left = el('div', { class: 'card' });
     const histList = el('div', { class: 'history' });
-    const right = el('div', { class: 'card' }, el('h3', {}, 'Inventory history'), el('p', { class: 'instructions', style: 'font-size:.85rem' }, 'A new inventory is recorded each time you change a coefficient.'), histList);
+    const right = el('div', { class: 'card' }, el('h3', {}, 'Inventory history'),
+      el('p', { class: 'instructions', style: 'font-size:.85rem' }, 'Each inventory you complete correctly is recorded here.'), histList);
     work.append(el('div', { class: 'si-layout' }, left, right));
 
     left.append(el('div', { class: 'card-head' }, el('h3', {}, 'Balance by sequential inventory')),
-      el('p', { class: 'instructions', html: 'Change one coefficient at a time and watch the inventory. A blank box counts as 1. Fractions such as <b>25/2</b> are allowed while you work.' }));
-    left.append(equationEl(eq, () => { const i = el('input', { type: 'text', class: 'coef-in', autocomplete: 'off' }); ins.push(i); return i; }));
+      el('p', { class: 'instructions', html: 'Take an atom inventory, then change a coefficient and <b>update the inventory</b>. Repeat until every atom matches. A blank coefficient box counts as 1; fractions such as <b>25/2</b> are allowed while you work.' }));
+    left.append(equationEl(eq, () => { const i = el('input', { type: 'text', class: 'coef-in', autocomplete: 'off' }); ins.push(i); onEnter(i, toInventory); return i; }));
 
+    const stepLabel = el('div', { class: 'step-no', style: 'margin:6px 0 4px' });
     const tableBox = el('div');
+    const actions = el('div', { class: 'row', style: 'margin-top:12px' });
     const fb = el('div', { class: 'feedback' });
-    let toggleRow = null;
+    let cb = null, toggleRow = null;
     if (eq.units) {
-      const cb = el('input', { type: 'checkbox' });
-      cb.addEventListener('change', () => { mode = cb.checked ? 'units' : 'atoms'; update(); });
+      cb = el('input', { type: 'checkbox' });
+      cb.addEventListener('change', () => { mode = cb.checked ? 'units' : 'atoms'; buildInventoryTable(); });
       toggleRow = el('label', { class: 'toggle' }, cb,
         el('span', { html: 'Shortcut: count ' + eq.units.ions.map((x) => `<b class="inline-eq">${unitLabel(x)}</b>`).join(', ') + ' as single units (they stay intact on both sides)' }));
     }
-    left.append(el('div', { class: 'row', style: 'margin:4px 0 10px' }, toggleRow, el('span', { class: 'spacer' }), btn('Reset', reset, 'small ghost')), tableBox, fb);
+    left.append(el('div', { class: 'row', style: 'margin:4px 0 6px' }, toggleRow, el('span', { class: 'spacer' }), btn('Start over', reset, 'small ghost')),
+      stepLabel, tableBox, actions, fb);
 
-    let lastSnapshot = null, histCount = 0;
-    ins.forEach((i) => {
-      i.addEventListener('input', update);
-      i.addEventListener('change', record);
-      onEnter(i, () => { record(); });
-    });
+    const checkB = btn('Check inventory', checkInventory, 'primary');
+    const updateB = btn('Update inventory →', toInventory, 'primary');
 
     function readCoefs() {
       const vs = ins.map((i) => C.parseNumber(i.value));
+      let ok = true;
       ins.forEach((i, k) => {
         const bad = vs[k] === undefined || (vs[k] && vs[k].sign() <= 0);
-        i.classList.toggle('err', bad);
+        i.classList.toggle('err', bad); if (bad) ok = false;
       });
-      if (vs.some((v) => v === undefined || (v && v.sign() <= 0))) return null;
-      return vs;
+      return ok ? vs : null;
     }
-    function update() {
-      const vs = readCoefs();
-      if (!vs) { setFeedback(fb, 'bad', 'Coefficients must be positive numbers (e.g. 3 or 25/2).'); return; }
-      const inv = C.inventory(eq, vs, mode);
+    const snap = (vs) => vs.map((v) => (v ? v.toString() : '1')).join(',');
+
+    let rows = [];
+    function buildInventoryTable() {
+      const vs = lastCoefsPending || ins.map(() => null);
+      const truth = C.inventory(eq, vs, mode);
       tableBox.innerHTML = '';
-      tableBox.append(invTable(inv, { keyHead: mode === 'units' ? 'Atom / unit' : 'Atom' }));
-      const atomInv = C.inventory(eq, vs, 'atoms');
-      const balanced = atomInv.every((r) => r.ok);
-      if (!balanced) {
-        const off = inv.filter((r) => !r.ok).map((r) => unitLabel(r.key));
-        setFeedback(fb, 'info', `Not balanced yet — ${off.join(', ')} ${off.length === 1 ? 'does' : 'do'} not match.`);
-        return;
-      }
-      const res = C.checkCoefficients(eq, vs);
-      if (res.status === 'fraction') {
-        const L = C.lcmOfDenominators(vs.map((v) => v || new Rat(1)));
-        setFeedback(fb, 'note', `Every atom balances — but there is a fraction. <b>Clear the fraction:</b> multiply every coefficient by ${L}.`);
-      } else if (res.status === 'multiple') {
-        setFeedback(fb, 'good', `<div class="big-win">Balanced!</div>Note: every coefficient can be divided by ${res.factor}. The smallest whole numbers are preferred.`);
-      } else if (res.status === 'correct') {
-        setFeedback(fb, 'good', `<div class="big-win">BALANCED!</div><div class="eqline">${eqHTML(eq, vs)}</div>Choose <b>New problem</b> above to try another.`);
-      }
+      const t = el('table', { class: 'inv' }, el('tr', {}, el('th', {}, mode === 'units' ? 'Atom / unit' : 'Atom'),
+        el('th', {}, 'Reactants'), el('th', {}, 'Products'), el('th', {}, '')));
+      rows = truth.map((r) => {
+        const prev = lastCounts && lastCounts[r.key];
+        const L = el('input', { type: 'text', class: 'short', autocomplete: 'off', value: prev ? prev.left : '' });
+        const R = el('input', { type: 'text', class: 'short', autocomplete: 'off', value: prev ? prev.right : '' });
+        const st = el('td', { class: 'status' });
+        onEnter(L, checkInventory); onEnter(R, checkInventory);
+        const tr = el('tr', {}, el('td', { class: 'el', html: unitLabel(r.key) + (r.isUnit ? '<span class="unit-tag">unit</span>' : '') }), el('td', {}, L), el('td', {}, R), st);
+        t.append(tr);
+        return { r, L, R, st, tr };
+      });
+      tableBox.append(t);
     }
-    function record() {
-      const vs = readCoefs();
-      if (!vs) return;
-      const snap = vs.map((v) => (v ? v.toString() : '1')).join(',');
-      if (snap === lastSnapshot) return;
-      lastSnapshot = snap;
+
+    let lastCoefsPending = null;      // coefficients currently being inventoried
+    function enterInventoryPhase(vs) {
+      phase = 'inventory';
+      lastCoefsPending = vs;
+      ins.forEach((i) => { i.disabled = true; });
+      stepLabel.textContent = histCount === 0 ? 'Inventory 1 — count the atoms in the starting equation' :
+        `Inventory ${histCount + 1} — update the counts for your new coefficients`;
+      buildInventoryTable();
+      actions.innerHTML = ''; actions.append(checkB);
+      checkB.disabled = false;
+      setFeedback(fb, '', '');
+      const first = rows[0] && rows[0].L; if (first) first.focus();
+    }
+
+    function contributions(key, leftSide) {
+      const cf = mode === 'units' && eq.units ? eq.units.countsOf : (sp) => sp.counts;
+      const parts = [];
+      eq.species.forEach((sp, j) => {
+        if ((j < eq.nR) !== leftSide) return;
+        const n = cf(sp)[key]; if (!n) return;
+        const c = lastCoefsPending[j] || new Rat(1);
+        parts.push(`${c} × ${n} (<span class="inline-eq">${C.formulaHTML(sp.text)}</span>)`);
+      });
+      return parts.join(' + ');
+    }
+
+    function checkInventory() {
+      if (phase !== 'inventory') return;
+      let allOk = true; const msgs = [];
+      for (const x of rows) {
+        let rowOk = true;
+        for (const [inp, val, leftSide] of [[x.L, x.r.left, true], [x.R, x.r.right, false]]) {
+          const p = C.parseNumber(inp.value);
+          const good = p != null && p !== undefined && p.eq(val);
+          inp.classList.toggle('ok', good); inp.classList.toggle('err', !good);
+          if (!good) {
+            rowOk = false;
+            const k = x.r.key + (leftSide ? 'L' : 'R');
+            if (p != null && p !== undefined) misses[k] = (misses[k] || 0) + 1;
+            const sideName = leftSide ? 'reactant' : 'product';
+            msgs.push(misses[k] >= 2
+              ? `<b>${unitLabel(x.r.key)}</b>, ${sideName} side: ${contributions(x.r.key, leftSide)}.`
+              : `<b>${unitLabel(x.r.key)}</b>, ${sideName} side: recount — multiply each subscript by its coefficient, then add.`);
+          }
+        }
+        if (!rowOk) allOk = false;
+      }
+      if (!allOk) { setFeedback(fb, 'bad', msgs.join('<br>')); return; }
+
+      // accepted: lock, show match status, record history
+      rows.forEach((x) => {
+        x.L.disabled = true; x.R.disabled = true;
+        x.tr.className = x.r.ok ? 'ok' : 'bad';
+        x.st.textContent = x.r.ok ? '✓ match' : '✗ unequal';
+      });
+      if (cb) cb.disabled = true;
+      lastCoefs = lastCoefsPending;
+      lastCounts = {}; rows.forEach((x) => { lastCounts[x.r.key] = { left: x.r.left.toString(), right: x.r.right.toString() }; });
       histCount++;
-      const inv = C.inventory(eq, vs, mode);
-      const item = el('div', { class: 'hist-item' },
+      const vs = lastCoefs;
+      histList.prepend(el('div', { class: 'hist-item' },
         el('div', { class: 'hist-title' }, `Inventory ${histCount}`),
         el('div', { class: 'hist-eq', html: eqHTML(eq, vs) }),
-        el('div', { class: 'hist-inv', html: inv.map((r) => `<span class="${r.ok ? 'ok' : 'bad'}">${unitLabel(r.key)}: ${r.left} | ${r.right}</span>`).join('') }));
-      histList.prepend(item);
+        el('div', { class: 'hist-inv', html: rows.map((x) => `<span class="${x.r.ok ? 'ok' : 'bad'}">${unitLabel(x.r.key)}: ${x.r.left} | ${x.r.right}</span>`).join('') })));
+
+      const balanced = C.inventory(eq, vs, 'atoms').every((r) => r.ok);
+      if (balanced) {
+        const res = C.checkCoefficients(eq, vs);
+        if (res.status === 'fraction') {
+          const L = C.lcmOfDenominators(vs.map((v) => v || new Rat(1)));
+          setFeedback(fb, 'note', `Your inventory is correct and every atom matches — but there is a fraction. <b>Clear the fraction:</b> multiply every coefficient by ${L}, then update the inventory.`);
+          enterAdjustPhase(false);
+          return;
+        }
+        phase = 'done';
+        actions.innerHTML = '';
+        stepLabel.textContent = `Inventory ${histCount} — balanced`;
+        const note = res.status === 'multiple' ? `<br>Note: every coefficient can be divided by ${res.factor}. The smallest whole numbers are preferred.` : '';
+        setFeedback(fb, 'good', `<div class="big-win">BALANCED!</div><div class="eqline">${eqHTML(eq, vs)}</div>Choose <b>New problem</b> above to try another.${note}`);
+        return;
+      }
+      const off = rows.filter((x) => !x.r.ok).map((x) => unitLabel(x.r.key));
+      setFeedback(fb, 'good', `Inventory ${histCount} is correct. Not balanced yet — ${off.join(', ')} ${off.length === 1 ? 'does' : 'do'} not match.`);
+      enterAdjustPhase(true);
     }
+
+    function enterAdjustPhase() {
+      phase = 'adjust';
+      ins.forEach((i) => { i.disabled = false; });
+      stepLabel.textContent = `Next step — change a coefficient, then update the inventory`;
+      actions.innerHTML = ''; actions.append(updateB);
+      const target = ins.find((i) => !i.value) || ins[0];
+      target.focus();
+    }
+
+    function toInventory() {
+      if (phase !== 'adjust') return;
+      const vs = readCoefs();
+      if (!vs) { setFeedback(fb, 'bad', 'Coefficients must be positive numbers (e.g. 3 or 25/2). A blank box counts as 1.'); return; }
+      if (lastCoefs && snap(vs) === snap(lastCoefs)) { setFeedback(fb, 'bad', 'Change at least one coefficient before updating the inventory.'); return; }
+      enterInventoryPhase(vs);
+    }
+
     function reset() {
       ins.forEach((i) => { i.value = ''; i.classList.remove('err'); });
-      histList.innerHTML = ''; histCount = 0; lastSnapshot = null;
-      update(); record();
-      ins[0].focus();
+      histList.innerHTML = ''; histCount = 0; lastCoefs = null; lastCounts = null;
+      for (const k in misses) delete misses[k];
+      if (cb) cb.disabled = false;
+      enterInventoryPhase(ins.map(() => null));
     }
-    update(); record();
+    reset();
   }
 
   // ======================================================================
