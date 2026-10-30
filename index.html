@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Balancing Chemical Equations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">a&thinsp;A + b&thinsp;B <span class="arrow">→</span> c&thinsp;C</span>
+      <div>
+        <h1>Balancing Chemical Equations</h1>
+        <p class="tagline">Learn two methods, then test yourself</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="coach" role="tab">Coaching</button>
+      <button class="tab" data-tab="test" role="tab">Testing</button>
+      <button class="tab hidden" data-tab="instructor" role="tab" id="instructorTab">Instructor</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ================= COACHING ================= -->
+    <section id="tab-coach" class="panel">
+      <div class="method-switch">
+        <button class="method active" data-method="vs">
+          <span class="method-letter">A</span>
+          <span><strong>Variable Substitution</strong><small>Algebra — best for complicated reactions</small></span>
+        </button>
+        <button class="method" data-method="si">
+          <span class="method-letter">B</span>
+          <span><strong>Sequential Inventory</strong><small>Adjust one coefficient at a time</small></span>
+        </button>
+      </div>
+
+      <div id="coach-vs" class="method-body"></div>
+      <div id="coach-si" class="method-body hidden"></div>
+    </section>
+
+    <!-- ================= TESTING ================= -->
+    <section id="tab-test" class="panel hidden"></section>
+
+    <!-- ================= INSTRUCTOR ================= -->
+    <section id="tab-instructor" class="panel hidden"></section>
+  </main>
+
+  <footer class="foot">
+    A blank coefficient box counts as 1 &nbsp;·&nbsp; Fractions are written like 25/2
+  </footer>
+
+  <script src="js/chem.js"></script>
+  <script src="js/problems.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
